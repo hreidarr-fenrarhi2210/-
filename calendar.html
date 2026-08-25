@@ -1,0 +1,942 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ᚢᛚᚠᚨᚦᚱ · Скандинавский календарь</title>
+
+    <link rel="manifest" href="data:application/json,{
+        &quot;name&quot;: &quot;ᚢᛚᚠᚨᚦᚱ · Скандинавский календарь&quot;,
+        &quot;short_name&quot;: &quot;Ulfadr&quot;,
+        &quot;start_url&quot;: &quot;.&quot;,
+        &quot;display&quot;: &quot;standalone&quot;,
+        &quot;background_color&quot;: &quot;#0d0d0d&quot;,
+        &quot;theme_color&quot;: &quot;#1a1a1a&quot;,
+        &quot;icons&quot;: [
+            {
+                &quot;src&quot;: &quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%231a1a1a' rx='64'/%3E%3Ctext x='256' y='320' font-size='200' text-anchor='middle' fill='%238b2a2a' font-family='serif'%3Eᚢ%3C/text%3E%3C/svg%3E&quot;,
+                &quot;sizes&quot;: &quot;512x512&quot;,
+                &quot;type&quot;: &quot;image/svg+xml&quot;,
+                &quot;purpose&quot;: &quot;any maskable&quot;
+            }
+        ]
+    }">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #0d0d0d;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: #d4cdc0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 10px 80px;
+            overflow-x: hidden;
+        }
+
+        .app-header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #1a1a1a;
+            border-radius: 16px;
+            border: 1px solid #3a3a3a;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .app-header .title {
+            font-size: 22px;
+            font-weight: normal;
+            letter-spacing: 0.15em;
+            color: #d4cdc0;
+        }
+
+        .app-header .title .rune {
+            color: #8b2a2a;
+        }
+
+        .app-header .year-nav {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-header .year-nav button {
+            background: none;
+            border: 1px solid #3a3a3a;
+            color: #d4cdc0;
+            font-size: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: 'Georgia', serif;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .app-header .year-nav button:active {
+            background: #8b2a2a;
+            border-color: #8b2a2a;
+        }
+
+        .app-header .year-nav .year-display {
+            font-size: 22px;
+            font-weight: bold;
+            min-width: 70px;
+            text-align: center;
+            color: #d4cdc0;
+        }
+
+        .info-bar {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 18px;
+            padding: 8px 16px;
+            background: #1a1a1a;
+            border-radius: 30px;
+            border: 1px solid #2a2a2a;
+            margin-bottom: 16px;
+            font-size: 14px;
+            color: #888;
+        }
+
+        .info-bar .hl {
+            color: #d4cdc0;
+            font-weight: bold;
+        }
+
+        .info-bar .rune {
+            color: #8b2a2a;
+        }
+
+        #pagesContainer {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .page {
+            width: 100%;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 16px;
+            padding: 14px 12px 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 2px double #8b2a2a;
+            padding-bottom: 6px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 4px 10px;
+        }
+
+        .page-header .month-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d4cdc0;
+        }
+
+        .page-header .month-title .rune {
+            color: #8b2a2a;
+            margin-right: 6px;
+        }
+
+        .page-header .month-title small {
+            font-size: 14px;
+            font-weight: normal;
+            color: #777;
+            margin-left: 6px;
+        }
+
+        .page-header .season-label {
+            font-size: 16px;
+            color: #888;
+        }
+
+        .page-header .season-label .rune {
+            color: #8b2a2a;
+            margin-right: 4px;
+        }
+
+        .weekdays,
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            text-align: center;
+        }
+
+        .weekdays {
+            font-size: 9px;
+            font-weight: bold;
+            color: #888;
+            margin-bottom: 4px;
+            letter-spacing: 0.1px;
+        }
+
+        .day {
+            padding: 6px 0;
+            font-size: 14px;
+            border-radius: 30px;
+            background: #1e1e1e;
+            color: #c0bdb8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            cursor: default;
+            transition: all 0.3s ease;
+        }
+
+        .day.saturday {
+            background: #2a2a2a;
+            color: #aaa;
+        }
+
+        .day.holiday {
+            background: #990000 !important;
+            color: #fff !important;
+            font-weight: bold;
+            box-shadow: 0 0 12px rgba(200, 0, 0, 0.4);
+        }
+
+        .day.today {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-weight: bold;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            border: 2px solid #ffffff;
+            transform: scale(1.1);
+            z-index: 10;
+            position: relative;
+        }
+
+        .day.empty {
+            background: transparent;
+            color: transparent;
+            box-shadow: none;
+        }
+
+        .page-footer {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #2a2a2a;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #555;
+            flex-wrap: wrap;
+        }
+
+        .page-footer .rune {
+            color: #8b2a2a;
+            margin-right: 4px;
+        }
+
+        .holiday-list-inline {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 2px solid #2a2a2a;
+        }
+
+        .holiday-list-inline h3 {
+            font-size: 16px;
+            color: #c4b998;
+            font-weight: normal;
+            margin-bottom: 8px;
+        }
+
+        .holiday-list-inline h3 .rune {
+            color: #8b2a2a;
+            margin-right: 6px;
+        }
+
+        .holiday-item-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 16px;
+            padding: 4px 0;
+            font-size: 14px;
+            color: #b0b0b0;
+            border-bottom: 1px solid #222;
+        }
+
+        .holiday-item-inline:last-child {
+            border-bottom: none;
+        }
+
+        .holiday-item-inline .name {
+            font-weight: bold;
+            color: #d4cdc0;
+            min-width: 100px;
+        }
+
+        .holiday-item-inline .date {
+            color: #999;
+            min-width: 100px;
+        }
+
+        .holiday-item-inline .desc {
+            color: #777;
+            font-style: italic;
+        }
+
+        .cycle-table {
+            width: 100%;
+            max-width: 800px;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 16px;
+            padding: 16px 12px;
+            margin-top: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+        }
+
+        .cycle-table h3 {
+            font-size: 18px;
+            color: #c4b998;
+            font-weight: normal;
+            margin-bottom: 12px;
+            letter-spacing: 0.1em;
+            text-align: center;
+        }
+
+        .cycle-table h3 .rune {
+            color: #8b2a2a;
+            margin-right: 6px;
+        }
+
+        .cycle-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            text-align: center;
+            min-width: 400px;
+        }
+
+        .cycle-table th {
+            color: #888;
+            font-weight: bold;
+            padding: 5px 3px;
+            border-bottom: 1px solid #2a2a2a;
+            font-size: 10px;
+            letter-spacing: 0.05em;
+        }
+
+        .cycle-table td {
+            padding: 4px 3px;
+            border-bottom: 1px solid #1f1f1f;
+            color: #b0b0b0;
+        }
+
+        .cycle-table .has-auku {
+            color: #8b2a2a;
+            font-weight: bold;
+        }
+
+        .cycle-table .has-auku .rune {
+            color: #8b2a2a;
+        }
+
+        .cycle-table .year-col {
+            color: #d4cdc0;
+            font-weight: bold;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border-top: 1px solid #3a3a3a;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 12px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .bottom-nav button {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 13px;
+            font-family: 'Georgia', serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .bottom-nav button .rune {
+            font-size: 22px;
+            color: #8b2a2a;
+        }
+
+        .bottom-nav button.active {
+            color: #d4cdc0;
+            background: #2a2a2a;
+        }
+
+        .bottom-nav button:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 480px) {
+            .app-header .title {
+                font-size: 18px;
+            }
+            .app-header .year-nav .year-display {
+                font-size: 18px;
+                min-width: 60px;
+            }
+            .app-header .year-nav button {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+            .day {
+                font-size: 12px;
+                min-height: 30px;
+                padding: 4px 0;
+            }
+            .weekdays {
+                font-size: 7px;
+                letter-spacing: 0;
+            }
+            .page-header .month-title {
+                font-size: 17px;
+            }
+            .page-header .month-title small {
+                font-size: 12px;
+            }
+            .info-bar {
+                font-size: 12px;
+                gap: 4px 12px;
+                padding: 6px 12px;
+            }
+            .holiday-item-inline {
+                font-size: 12px;
+            }
+            .holiday-item-inline .name {
+                min-width: 70px;
+            }
+            .holiday-item-inline .date {
+                min-width: 70px;
+            }
+            .bottom-nav button {
+                font-size: 11px;
+                padding: 2px 8px;
+            }
+            .bottom-nav button .rune {
+                font-size: 18px;
+            }
+            .cycle-table table {
+                font-size: 10px;
+            }
+            .cycle-table th {
+                font-size: 9px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .day {
+                min-height: 48px;
+                font-size: 17px;
+            }
+            .page {
+                padding: 20px 18px 16px;
+            }
+            .weekdays {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <span class="title"><span class="rune">ᚢ</span> Ulfadr</span>
+        <div class="year-nav">
+            <button id="prevYear">←</button>
+            <span class="year-display" id="yearDisplay">2026</span>
+            <button id="nextYear">→</button>
+        </div>
+    </header>
+
+    <div class="info-bar" id="infoBar">
+        <span><span class="rune">ᚲ</span> <span id="totalDaysDisplay">354</span> дня</span>
+        <span><span class="rune">ᛗ</span> <span id="monthsCountDisplay">12</span> месяцев</span>
+        <span><span class="rune">ᚦ</span> <span id="yearTypeDisplay">обычный</span></span>
+    </div>
+
+    <div id="pagesContainer"></div>
+
+    <div class="cycle-table hidden" id="cycleTable">
+        <h3><span class="rune">ᚲ</span> Циклы Аукумануда · 2026–2125</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Год</th>
+                    <th>Начало (день недели)</th>
+                    <th>Дней</th>
+                    <th>Аукумануд</th>
+                </tr>
+            </thead>
+            <tbody id="cycleTableBody"></tbody>
+        </table>
+    </div>
+
+    <nav class="bottom-nav">
+        <button id="goToday" class="active">
+            <span class="rune">ᚲ</span>
+            <span>Сегодня</span>
+        </button>
+        <button id="goHolidays">
+            <span class="rune">ᚠ</span>
+            <span>Праздники</span>
+        </button>
+        <button id="goCycle">
+            <span class="rune">ᛉ</span>
+            <span>Циклы</span>
+        </button>
+    </nav>
+
+    <script>
+        (function() {
+            'use strict';
+
+            const AUKUMANUDUR_DAYS = 30;
+            const AUKU_START_YEAR = 2029;
+            const AUKU_INTERVAL = 3;
+            let currentYear = 2026;
+
+            function hasAukumanudur(year) {
+                return year >= AUKU_START_YEAR && (year - AUKU_START_YEAR) % AUKU_INTERVAL === 0;
+            }
+
+            function getFirstFridayAfter(monthDays, startDay, monthIndex, dayOffset) {
+                let daysBefore = 0;
+                for (let i = 0; i < monthIndex; i++) {
+                    daysBefore += monthDays[i];
+                }
+                const startOffset = (startDay + daysBefore) % 7;
+                let candidate = dayOffset + 1;
+                while (true) {
+                    const dayOffsetFromStart = candidate - 1;
+                    const dow = (startOffset + dayOffsetFromStart) % 7;
+                    if (dow === 5) return candidate;
+                    candidate++;
+                }
+            }
+
+            function getThursdayAfter(monthDays, startDay, monthIndex, dayOffset) {
+                let daysBefore = 0;
+                for (let i = 0; i < monthIndex; i++) {
+                    daysBefore += monthDays[i];
+                }
+                const startOffset = (startDay + daysBefore) % 7;
+                let candidate = dayOffset + 1;
+                while (true) {
+                    const dayOffsetFromStart = candidate - 1;
+                    const dow = (startOffset + dayOffsetFromStart) % 7;
+                    if (dow === 4) return candidate;
+                    candidate++;
+                }
+            }
+
+            function buildMonths(targetYear) {
+                const hasAuku = hasAukumanudur(targetYear);
+
+                const baseMonths = [
+                    { name: 'Гормануд', days: 29, holidays: [1, 2, 3, 4, 5, 6, 7, 8, 9], season: 'Зима', rune: 'ᚷ' },
+                    { name: 'Фрёр', days: 30, holidays: [], season: 'Зима', rune: 'ᚠ' },
+                    { name: 'Йольмануд', days: 29, holidays: [21, 22, 23, 24, 25, 26, 27, 28, 29], season: 'Зима', rune: 'ᛃ' },
+                    { name: 'Торри', days: 30, holidays: [], season: 'Зима', rune: 'ᛏ' },
+                    { name: 'Гои', days: 29, holidays: [], season: 'Зима', rune: 'ᚷ' },
+                    { name: 'Эйнмануд', days: 30, holidays: [], season: 'Зима', rune: 'ᛇ' },
+                    { name: 'Харпа', days: 29, holidays: [20], season: 'Лето', rune: 'ᚺ' },
+                    { name: 'Скерпла', days: 30, holidays: [], season: 'Лето', rune: 'ᛊ' }
+                ];
+
+                const aukuMonth = {
+                    name: 'Аукумануд',
+                    days: AUKUMANUDUR_DAYS,
+                    holidays: [],
+                    season: 'Лето',
+                    rune: 'ᛉ',
+                    isAuku: true
+                };
+
+                const afterAuku = [
+                    { name: 'Сольмануд', days: 29, holidays: [24], season: 'Лето', rune: 'ᛋ' },
+                    { name: 'Эйирид', days: 30, holidays: [], season: 'Лето', rune: 'ᛇ' },
+                    { name: 'Твимануд', days: 29, holidays: [], season: 'Лето', rune: 'ᛏ' },
+                    { name: 'Хаустмануд', days: 30, holidays: [], season: 'Лето', rune: 'ᚺ' }
+                ];
+
+                const months = [];
+                months.push(...baseMonths);
+                if (hasAuku) {
+                    months.push(aukuMonth);
+                }
+                months.push(...afterAuku);
+
+                return months;
+            }
+
+            function getYearStartDay(year) {
+                let startDay = 1; // Вторник 14 октября 2025
+
+                for (let y = 2026; y <= year; y++) {
+                    const prevMonths = buildMonths(y - 1);
+                    const totalDays = prevMonths.reduce((sum, m) => sum + m.days, 0);
+                    startDay = (startDay + totalDays) % 7;
+                }
+
+                for (let y = 2024; y >= year; y--) {
+                    const currMonths = buildMonths(y);
+                    const totalDays = currMonths.reduce((sum, m) => sum + m.days, 0);
+                    startDay = (startDay - totalDays % 7 + 7) % 7;
+                }
+
+                return startDay;
+            }
+
+            function buildCalendar(year) {
+                const months = buildMonths(year);
+                const monthDays = months.map(m => m.days);
+                const yearStartDay = getYearStartDay(year);
+                const hasAuku = hasAukumanudur(year);
+
+                const torriIndex = months.findIndex(m => m.name === 'Торри');
+                const goiIndex = months.findIndex(m => m.name === 'Гои');
+                const harpaIndex = months.findIndex(m => m.name === 'Харпа');
+
+                const thorrablot = getFirstFridayAfter(monthDays, yearStartDay, torriIndex, 19);
+                const goi = getFirstFridayAfter(monthDays, yearStartDay, goiIndex, 18);
+                const sigrblot = getThursdayAfter(monthDays, yearStartDay, harpaIndex, 18);
+
+                months[torriIndex].holidays = [1, 2, 3, thorrablot];
+                months[goiIndex].holidays = [goi];
+                months[harpaIndex].holidays = [20, sigrblot];
+
+                const totalDays = months.reduce((sum, m) => sum + m.days, 0);
+
+                const HOLIDAYS = [
+                    { name: 'Зимние Ночи', date: '1–9 Гормануд', desc: 'Начало года, 9 дней (14–22 октября)' },
+                    { name: 'Йоль', date: '21–29 Йольмануд', desc: 'Зимнее солнцестояние, 12 дней' },
+                    { name: 'Торраблот', date: `${thorrablot} Торри`, desc: 'Первая пятница после 19 Торри' },
+                    { name: 'Сигрблот', date: `${sigrblot} Харпа`, desc: 'Четверг после 18 Харпа' },
+                    { name: 'Мидисоммер', date: '24 Сольмануд', desc: 'Летнее солнцестояние' },
+                    { name: 'Варблот', date: '20 Харпа', desc: 'Весеннее жертвоприношение' },
+                    { name: 'Гои', date: `${goi} Гои`, desc: 'Первая пятница после 18 Гои' },
+                    { name: 'Эйирид', date: 'Середина Эйирид', desc: 'Время тингов и клятв' },
+                    { name: 'Твимануд', date: 'Середина Твимануд', desc: 'Двойное полнолуние' }
+                ];
+
+                return {
+                    year,
+                    months,
+                    totalDays,
+                    yearStartDay,
+                    hasAuku,
+                    holidays: HOLIDAYS
+                };
+            }
+
+            function generateCycleTable() {
+                const tbody = document.getElementById('cycleTableBody');
+                tbody.innerHTML = '';
+
+                for (let y = 2026; y <= 2125; y++) {
+                    const startDay = getYearStartDay(y);
+                    const months = buildMonths(y);
+                    const totalDays = months.reduce((sum, m) => sum + m.days, 0);
+                    const hasAuku = hasAukumanudur(y);
+
+                    const tr = document.createElement('tr');
+
+                    const yearCell = document.createElement('td');
+                    yearCell.className = 'year-col';
+                    yearCell.textContent = y;
+                    tr.appendChild(yearCell);
+
+                    const startCell = document.createElement('td');
+                    startCell.textContent = WEEKDAY_NAMES_SHORT[startDay];
+                    tr.appendChild(startCell);
+
+                    const daysCell = document.createElement('td');
+                    daysCell.textContent = totalDays;
+                    tr.appendChild(daysCell);
+
+                    const aukuCell = document.createElement('td');
+                    if (hasAuku) {
+                        aukuCell.className = 'has-auku';
+                        aukuCell.innerHTML = '✅ <span class="rune">ᛉ</span>';
+                    } else {
+                        aukuCell.textContent = '--';
+                    }
+                    tr.appendChild(aukuCell);
+
+                    tbody.appendChild(tr);
+                }
+            }
+
+            const WEEKDAY_NAMES_SHORT = ['Сун', 'Мо', 'Тю', 'Од', 'То', 'Фр', 'Ла'];
+
+            const container = document.getElementById('pagesContainer');
+            const yearDisplay = document.getElementById('yearDisplay');
+            const totalDaysDisplay = document.getElementById('totalDaysDisplay');
+            const monthsCountDisplay = document.getElementById('monthsCountDisplay');
+            const yearTypeDisplay = document.getElementById('yearTypeDisplay');
+
+            function renderYear(year) {
+                const data = buildCalendar(year);
+                const { months, totalDays, yearStartDay, hasAuku, holidays } = data;
+
+                yearDisplay.textContent = year;
+                totalDaysDisplay.textContent = totalDays;
+                monthsCountDisplay.textContent = months.length;
+                yearTypeDisplay.textContent = hasAuku ? 'с Аукуманудом' : 'обычный';
+
+                container.innerHTML = '';
+
+                const todayScandYear = 2026;
+                const todayDayOfYear = 307; // 12 день Твимануда
+
+                months.forEach((monthObj, index) => {
+                    const page = document.createElement('div');
+                    page.className = 'page';
+
+                    const header = document.createElement('div');
+                    header.className = 'page-header';
+
+                    const title = document.createElement('span');
+                    title.className = 'month-title';
+                    const daysCount = monthObj.days;
+                    const rune = monthObj.rune || 'ᚠ';
+                    const name = monthObj.isAuku ? 'Аукумануд' : monthObj.name;
+                    const daysLabel = daysCount === 1 ? 'день' :
+                                      (daysCount >= 2 && daysCount <= 4) ? 'дня' : 'дней';
+                    title.innerHTML = `<span class="rune">${rune}</span> ${name} <small>${daysCount} ${daysLabel}</small>`;
+                    header.appendChild(title);
+
+                    const seasonLabel = document.createElement('span');
+                    seasonLabel.className = 'season-label';
+                    const sRune = monthObj.season === 'Зима' ? 'ᛇ' : 'ᛉ';
+                    seasonLabel.innerHTML = `${sRune} ${monthObj.season}`;
+                    header.appendChild(seasonLabel);
+
+                    page.appendChild(header);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'month-grid';
+
+                    const wd = document.createElement('div');
+                    wd.className = 'weekdays';
+                    WEEKDAY_NAMES_SHORT.forEach(d => {
+                        const span = document.createElement('span');
+                        span.textContent = d;
+                        wd.appendChild(span);
+                    });
+                    grid.appendChild(wd);
+
+                    const daysGrid = document.createElement('div');
+                    daysGrid.className = 'days';
+
+                    let daysBefore = 0;
+                    for (let i = 0; i < index; i++) {
+                        daysBefore += months[i].days;
+                    }
+                    const startDay = (yearStartDay + daysBefore) % 7;
+
+                    for (let i = 0; i < startDay; i++) {
+                        const empty = document.createElement('span');
+                        empty.className = 'day empty';
+                        empty.textContent = '';
+                        daysGrid.appendChild(empty);
+                    }
+
+                    for (let d = 1; d <= daysCount; d++) {
+                        const cell = document.createElement('span');
+                        cell.className = 'day';
+                        cell.textContent = d;
+
+                        const dow = (startDay + d - 1) % 7;
+                        if (dow === 6) cell.classList.add('saturday');
+
+                        if (todayScandYear === year) {
+                            const dayOffset = daysBefore + d;
+                            if (dayOffset === todayDayOfYear) {
+                                cell.classList.add('today');
+                                cell.id = 'todayCell'; // Добавляем id для прокрутки
+                            }
+                        }
+
+                        if (monthObj.holidays && monthObj.holidays.includes(d)) {
+                            cell.classList.add('holiday');
+                        }
+
+                        daysGrid.appendChild(cell);
+                    }
+
+                    grid.appendChild(daysGrid);
+                    page.appendChild(grid);
+
+                    if (index === months.length - 1) {
+                        const listBlock = document.createElement('div');
+                        listBlock.className = 'holiday-list-inline';
+
+                        const titleBlock = document.createElement('h3');
+                        titleBlock.innerHTML = `<span class="rune">ᚲ</span> Праздники / Hátíðir`;
+                        listBlock.appendChild(titleBlock);
+
+                        holidays.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'holiday-item-inline';
+                            div.innerHTML = `
+                                        <span class="name">${item.name}</span>
+                                        <span class="date">${item.date}</span>
+                                        <span class="desc">${item.desc}</span>
+                                    `;
+                            listBlock.appendChild(div);
+                        });
+
+                        page.appendChild(listBlock);
+                    }
+
+                    const footer = document.createElement('div');
+                    footer.className = 'page-footer';
+                    footer.innerHTML = `
+                                <span><span class="rune">ᚲ</span> ${daysCount} ${daysLabel}</span>
+                                <span><span class="rune">ᚠ</span> ᚢᛚᚠᚨᚦᚱ · ${totalDays} дней</span>
+                            `;
+                    page.appendChild(footer);
+
+                    container.appendChild(page);
+                });
+            }
+
+            function scrollToToday() {
+                const todayCell = document.getElementById('todayCell');
+                if (todayCell) {
+                    todayCell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            document.getElementById('prevYear').addEventListener('click', function() {
+                currentYear--;
+                renderYear(currentYear);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            document.getElementById('nextYear').addEventListener('click', function() {
+                currentYear++;
+                renderYear(currentYear);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            document.getElementById('goToday').addEventListener('click', function() {
+                currentYear = 2026;
+                renderYear(currentYear);
+                document.getElementById('cycleTable').classList.add('hidden');
+                setActiveNav('goToday');
+                // Прокручиваем к белому квадрату
+                setTimeout(scrollToToday, 100);
+            });
+
+            document.getElementById('goHolidays').addEventListener('click', function() {
+                document.getElementById('cycleTable').classList.add('hidden');
+                const holidayBlocks = document.querySelectorAll('.holiday-list-inline');
+                if (holidayBlocks.length > 0) {
+                    const lastBlock = holidayBlocks[holidayBlocks.length - 1];
+                    lastBlock.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                }
+                setActiveNav('goHolidays');
+            });
+
+            document.getElementById('goCycle').addEventListener('click', function() {
+                const table = document.getElementById('cycleTable');
+                table.classList.toggle('hidden');
+                if (!table.classList.contains('hidden')) {
+                    table.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    setActiveNav('goCycle');
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    setActiveNav('goToday');
+                }
+            });
+
+            function setActiveNav(activeId) {
+                const buttons = ['goToday', 'goHolidays', 'goCycle'];
+                buttons.forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (id === activeId) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            }
+
+            generateCycleTable();
+            renderYear(2026);
+
+            const aukuYears = [];
+            for (let y = 2026; y <= 2125; y++) {
+                if (hasAukumanudur(y)) {
+                    aukuYears.push(y);
+                }
+            }
+            console.log('📆 Годы с Аукуманудом (2026–2125):');
+            console.log(aukuYears.join(', '));
+            console.log(`Всего: ${aukuYears.length} лет из 100`);
+            console.log('Сегодня: 12 день Твимануда, 2026 год');
+
+        })();
+    </script>
+
+</body>
+</html>
